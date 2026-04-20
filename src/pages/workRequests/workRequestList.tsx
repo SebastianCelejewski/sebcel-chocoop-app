@@ -1,43 +1,34 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router";
-import type { Schema } from "../../../amplify/data/resource";
 import { dateToString } from "../../utils/dateUtils";
 import { List, AutoSizer, CellMeasurer, CellMeasurerCache } from "react-virtualized";
-
+import { useState } from "react";
 import User from "../../model/User";
+import type { Schema } from "../../../amplify/data/resource";
+import { useWorkRequestListDetails } from "./hooks/useWorkRequestListDetails";
+import { useWorkRequestListActions } from "./hooks/useWorkRequestListActions";
+
 import { urgencyList } from "../../model/Urgency";
-import WorkRequestService from "../../services/WorkRequestService";
 
 const cache = new CellMeasurerCache({
     fixedWidth: true,
     defaultHeight: 100
 });
 
-const workRequestService = WorkRequestService();
-
-function sortByUrgency(workRequests: Array<Schema["WorkRequest"]["type"]>) {
-    return workRequests.sort((a, b) => a.urgency - b.urgency);
-}
-
 function WorkRequestList({ users }: { users: Map<string, User> }) {
-    const [workRequests, setWorkRequests] = useState<Array<Schema["WorkRequest"]["type"]>>([]);
+    const {workRequests} = useWorkRequestListDetails();
+    const {createWorkRequest, showWorkRequest, navigateToActivities} = useWorkRequestListActions();
     const [showCompletedWorkRequests, setShowCompletedWorkRequests] = useState(false);
-    const navigate = useNavigate();
-
     const visibleWorkRequests = workRequests.filter((workRequest) => !workRequest.completed || showCompletedWorkRequests);
 
-    useEffect(() => {
-        return workRequestService.observeWorkRequests((items) => {
-            setWorkRequests(sortByUrgency([...items]));
-        });
-    }, []);
+    cache.clearAll()
 
-    function createWorkRequest() {
-        navigate("/WorkRequestEdit/create");
-    }
-
-    function showWorkRequest(id: string) {
-        navigate(`/WorkRequestDetails/${id}`);
+    if (!workRequests) {
+        return <>
+            <h2 className="pageTitle" data-testid="work-request-list-page" onClick={navigateToActivities}>Lista zleceń do wykonania</h2>
+            <div className="loadingData">Ładowanie danych</div>
+            <div className="buttonPanel">
+                <button data-testid="create-button" onClick={createWorkRequest}>Dodaj zlecenie</button>
+            </div>
+        </>
     }
 
     function CompletnessStatus({ workRequest }: { workRequest: Schema["WorkRequest"]["type"] }) {
@@ -46,10 +37,6 @@ function WorkRequestList({ users }: { users: Map<string, User> }) {
         }
 
         return null;
-    }
-
-    function navigateToActivities() {
-        navigate("/ActivityList");
     }
 
     function handleShowCompletedToggled(): void {
@@ -89,15 +76,13 @@ function WorkRequestList({ users }: { users: Map<string, User> }) {
         );
     }
 
-    cache.clearAll();
-
     return <>
         <h2 className="pageTitle" data-testid="work-request-list-page" onClick={navigateToActivities}>Lista zleceń do wykonania</h2>
-
         <p><input data-testid="show-completed-checkbox" type="checkbox" name="showCompleted" id="showCompleted" checked={showCompletedWorkRequests} onChange={handleShowCompletedToggled} />Pokaż ukończone</p>
         <ul className="entityList">
             <AutoSizer>
-                {({ width, height }) => (
+            {
+                ({ width, height }) => (
                     <List
                         width={width}
                         height={height}
@@ -105,8 +90,10 @@ function WorkRequestList({ users }: { users: Map<string, User> }) {
                         rowHeight={cache.rowHeight}
                         rowRenderer={renderRow}
                         rowCount={visibleWorkRequests.length}
-                        overscanRowCount={3} />
-                )}
+                        overscanRowCount={3} 
+                    />
+                )
+            }
             </AutoSizer>
         </ul>
         <div className="buttonPanel">

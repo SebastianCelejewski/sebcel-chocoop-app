@@ -13,8 +13,8 @@ const cache = new CellMeasurerCache({
 
 function ActivityList({users}: {users: Map<string, User>}) {
 
+    const {activities, reactions} = useActivityListDetails();
     const {createActivity, showActivity, navigateToWorkRequests} = useActivityListActions();
-    const {activities, reactions } = useActivityListDetails();
 
     cache.clearAll()
 
@@ -58,29 +58,30 @@ function ActivityList({users}: {users: Map<string, User>}) {
         );
     }
 
-    return (
-        <>
-            <h2 className="pageTitle" data-testid="activity-list-page" onClick={navigateToWorkRequests}>Lista wykonanych czynności</h2>
-            <ul className="entityList">
-                <AutoSizer>
-                {
-                    ({ width, height }) => (<List
+    return <>
+        <h2 className="pageTitle" data-testid="activity-list-page" onClick={navigateToWorkRequests}>Lista wykonanych czynności</h2>
+
+        <ul className="entityList">
+            <AutoSizer>
+            {
+                ({ width, height }) => (
+                    <List
                         width={width}
                         height={height}
                         deferredMeasurementCache={cache}
                         rowHeight={cache.rowHeight}
                         rowRenderer={renderRow}
                         rowCount={activities.length}
-                        overscanRowCount={3} />
-                    )
-                }
-                </AutoSizer>
-            </ul>
-            <div className="buttonPanel">
-                <button data-testid="create-button" onClick={createActivity}>Dodaj czynność</button>
-            </div>
-        </>
-    );
+                        overscanRowCount={3}
+                    />
+                )
+            }
+            </AutoSizer>
+        </ul>
+        <div className="buttonPanel">
+            <button data-testid="create-button" onClick={createActivity}>Dodaj czynność</button>
+        </div>
+    </>;
 }
 
 export default ActivityList;

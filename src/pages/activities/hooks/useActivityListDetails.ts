@@ -1,13 +1,9 @@
 import { useEffect, useState } from "react";
 import type { Schema } from "../../../../amplify/data/resource";
-import { generateClient } from "aws-amplify/data";
-import { UIReaction } from "../../../model/UIReaction";
+import type { UIReaction } from "../../../model/UIReaction";
+import ActivityService from "../../../services/ActivityService";
 
-const client = generateClient<Schema>();
-
-class ActivityQueryResult {
-  items: Array<Schema["Activity"]["type"]> = []
-}
+const activityService = ActivityService();
 
 export function useActivityListDetails() {
 
@@ -15,26 +11,19 @@ export function useActivityListDetails() {
     const [reactions, setReactions] = useState<Array<UIReaction>>([]);
 
     useEffect(() => {
-        const activitiesQuery = client.models.Activity.observeQuery().subscribe({
-            next: (data: ActivityQueryResult) => {
-                setActivities(sortByDateTime([...data.items]))
-            }
+        activityService.observeActivities((items) => {
+            setActivities(sortByDateTime([...items]));
         });
 
-        const reactionsQuery = client.models.Reaction.observeQuery().subscribe({
-            next: (data: { items: Array<Schema["Reaction"]["type"]> }) => {
-                setReactions(data.items.map(reaction => ({
+        activityService.observeReactions((items) => {
+            const mappedItems : Array<UIReaction> = items.map(reaction => (
+                {
                     id: reaction.id,
                     reaction: reaction.reaction,
                     user: reaction.user,
                     activityId: reaction.activityId
-                })));
-            }
-        });
-
-        return (() => {
-            activitiesQuery.unsubscribe();
-            reactionsQuery.unsubscribe();
+                }));
+            setReactions(mappedItems);
         })
     }, []);
 

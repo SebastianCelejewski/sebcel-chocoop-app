@@ -14,6 +14,10 @@ export default function ActivityService() {
         items: Array<Schema["Activity"]["type"]> = []
     }
 
+    class ReactionsQueryResult {
+        items: Array<Schema["Reaction"]["type"]> = []
+    }
+
     async function createActivity(activity: ActivityFormState): Promise<OperationResult> {
         const newActivity = createActivityObjectFromState(activity);
 
@@ -66,15 +70,27 @@ export default function ActivityService() {
     }
 
     function observeActivities(onChange: (activities: Array<Schema["Activity"]["type"]>) => void) {
-        const activitesQuery = client.models.Activity.observeQuery().subscribe({
+        const activitiesQuery = client.models.Activity.observeQuery().subscribe({
             next: (data: ActivitiesQueryResult) => {
                 onChange(data.items);
             }
         });
 
         return () => {
-            ActivitiesQuery.unsubscribe();
+            activitiesQuery.unsubscribe();
         };
+    }
+
+    function observeReactions(onChange: (reactions: Array<Schema["Reaction"]["type"]>) => void) {
+        const reactionsQuery = client.models.Reaction.observeQuery().subscribe({
+            next: (data: ReactionsQueryResult) => {
+                onChange(data.items);
+            }
+        });
+
+        return () => {
+            reactionsQuery.unsubscribe();
+        }
     }
 
     async function deleteActivity(id: string): Promise<OperationResult> {
@@ -94,6 +110,7 @@ export default function ActivityService() {
         updateActivity,
         deleteActivity,
         getActivity,
-        observeActivities
+        observeActivities,
+        observeReactions
     }
 }

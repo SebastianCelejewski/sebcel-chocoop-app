@@ -31,7 +31,7 @@ export default function WorkRequestService() {
             return success(workRequestId);
         }
         catch(error) {
-            return failure("Failed to create a new workrequest in the database", error);
+            return failure("Failed to create a new work request in the database", error);
         }
     }
 
@@ -49,7 +49,7 @@ export default function WorkRequestService() {
             }
             return success(workRequest.id!);
         } catch(error) {
-            return failure("Failed to update an workrequest in the database", error);
+            return failure("Failed to update an work request in the database", error);
         }
     }
 
@@ -61,7 +61,7 @@ export default function WorkRequestService() {
             }
             return data ?? null;
         } catch(error) {
-            throw new Error(reportError("Failed to fetch a workrequest from the database", error));
+            throw new Error(reportError("Failed to fetch a work request from the database", error));
         }
     }
 
@@ -81,7 +81,7 @@ export default function WorkRequestService() {
         try {
             const deleteWorkRequestResponse = await client.models.WorkRequest.delete({ id });
             if (deleteWorkRequestResponse.errors?.length) {
-                return failure("Failed to delete a workrequest from the database", deleteWorkRequestResponse.errors);
+                return failure("Failed to delete a work  request from the database", deleteWorkRequestResponse.errors);
             }
             return success(id);
         } catch(error) {
