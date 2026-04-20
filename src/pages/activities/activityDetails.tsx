@@ -1,29 +1,22 @@
 import type { Schema } from "../../../amplify/data/resource";
-
 import { useState } from "react";
-import { NavLink, useParams, useNavigate } from "react-router";
-
+import { NavLink, useParams } from "react-router";
 import User from "../../model/User";
-import { useActivityDetails } from "./hooks/useActivityDetails";
+import { dateToString } from "../../utils/dateUtils";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
+import { useActivityDetails } from "./hooks/useActivityDetails";
 import { useActivityActions } from "./hooks/useActivityActions";
 import { useActivityReactions } from "./hooks/useActivityReactions";
 import { ReactionsByUser } from "../../components/reactions"
-import { dateToString } from "../../utils/dateUtils";
-import { useConfirm } from "../../hooks/useConfirm";
 
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
 
 function ActivityDetails({users}: {users: Map<string, User>}) {
-    const navigate = useNavigate();
-
     const { id: activityId } = useParams();
-    const { activity, loading, error } = useActivityDetails(activityId ?? null);
     const currentUser = useCurrentUser();
+    const { activity, loading, error } = useActivityDetails(activityId ?? null);
     const { reactions, refetch } = useActivityReactions(activityId);
-    const { deleteActivity, addReaction } = useActivityActions();
-    const { confirm, dialog } = useConfirm();
-
+    const { handleBack, handleEdit, handleDelete, handleAddReaction, dialog } = useActivityActions();
     const [reactionsPopupVisible, setReactionsPopupVisible] = useState<boolean>(false);
 
     if (!activityId || loading) {
@@ -42,23 +35,6 @@ function ActivityDetails({users}: {users: Map<string, User>}) {
         return <div className="notFoundState">User nie jest załadowany</div>;
     }
 
-    const handleBack = () => {
-        navigate("/ActivityList/")
-    }
-
-    const handleEdit = () => {
-        const navLink = `/ActivityEdit/update/${activity.id}`
-        navigate(navLink)
-    }
-
-    const handleDelete = async () => {
-        const ok = await confirm("Czy na pewno usunąć aktywność?");
-        if (!ok) return;
-
-        await deleteActivity(activity.id);
-        navigate("/ActivityList");
-    }
-
     const handleReaction = () => {
         setReactionsPopupVisible(!reactionsPopupVisible);
     }
@@ -66,12 +42,7 @@ function ActivityDetails({users}: {users: Map<string, User>}) {
     const handleEmojiSelected = async (emojiData: EmojiClickData) => {
         setReactionsPopupVisible(false);
 
-        await addReaction({
-            activityId: activity.id,
-            userId: currentUser.userId,
-            reaction: emojiData.emoji,
-        });
-
+        await handleAddReaction(activity.id, currentUser.userId, emojiData.emoji);
         await refetch();
     };
 
@@ -125,8 +96,8 @@ function ActivityDetails({users}: {users: Map<string, User>}) {
         </div>
         <div>
             <button type="button" data-testid="back-button" onClick={handleBack}>Wróć</button>
-            <button type="button" data-testid="edit-button" onClick={handleEdit}>Edytuj</button>
-            <button type="button" data-testid="delete-button" onClick={handleDelete}>Usuń</button>
+            <button type="button" data-testid="edit-button" onClick={() => handleEdit(activityId)}>Edytuj</button>
+            <button type="button" data-testid="delete-button" onClick={() => handleDelete(activityId)}>Usuń</button>
             <button type="button" data-testid="react-button" onClick={handleReaction}>Zareaguj</button>
         </div>
         {dialog}

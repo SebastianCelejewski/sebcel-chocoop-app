@@ -105,12 +105,26 @@ export default function ActivityService() {
         }
     }
 
+    async function addReaction(activityId: string, userId: string, reaction: string): Promise<OperationResult> {
+        try {
+            const createReactionResponse = await client.models.Reaction.create({ activityId: activityId, user: userId, reaction: reaction});
+            if (createReactionResponse.errors?.length || !createReactionResponse.data) {
+                return failure("Failed to add a reaction for an activity in the database", createReactionResponse.errors);
+            }
+            const reactionId = createReactionResponse.data.id;
+            return success(reactionId);
+        } catch (error) {
+            return failure("Failed to create a reaction for an activity in the database", error);
+        }
+    }
+
     return {
         createActivity,
         updateActivity,
         deleteActivity,
         getActivity,
         observeActivities,
+        addReaction,
         observeReactions
     }
 }

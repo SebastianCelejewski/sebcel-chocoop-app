@@ -1,85 +1,40 @@
 import type { Schema } from "../../../amplify/data/resource";
 
-import { useEffect, useState } from "react";
-import { NavLink, useParams, useNavigate } from "react-router";
-import { dateToString } from "../../utils/dateUtils";
-
-import reportError from "../../utils/reportError";
+import { NavLink, useParams } from "react-router";
 import User from "../../model/User";
-import { urgencyList } from "../../model/Urgency";
-import WorkRequestService from "../../services/WorkRequestService";
-import { useConfirm } from "../../hooks/useConfirm";
+import { dateToString } from "../../utils/dateUtils";
+import { useCurrentUser } from "../../hooks/useCurrentUser";
+import { useWorkRequestDetails } from "./hooks/useWorkRequestDetails";
+import { useWorkRequestActions } from "./hooks/useWorkRequestActions";
 
-const workRequestService = WorkRequestService();
+import { urgencyList } from "../../model/Urgency";
+
+
 
 function WorkRequestDetails({users}: {users: Map<string, User>}) {
-    const navigate = useNavigate();
-    const params = useParams();
-    const workRequestIdParam = params["id"];
-    const { confirm, dialog } = useConfirm();
+    const { id: workRequestId } = useParams();
+    const currentUser = useCurrentUser();
+    const {workRequest, loading, error } = useWorkRequestDetails(workRequestId ?? null);
+    const { handleBack, handleEdit, handleDelete, handleDone, dialog } = useWorkRequestActions();
 
-    const [workRequest, setWorkRequest] = useState<Schema["WorkRequest"]["type"]>();
+  
 
-    useEffect(() => {
-        if (workRequestIdParam === undefined) {
-            throw new Error(reportError("Error while fetching work request to be displayed: id is undefined"));
-        }
-
-        workRequestService
-            .getWorkRequest(workRequestIdParam)
-            .then((result) => {
-                if (result === null) {
-                    throw new Error(reportError("Error while fetching work request to be displayed: work request was not found"));
-                }
-                setWorkRequest(result);
-            })
-            .catch((error) => {
-                if (error instanceof Error) {
-                    throw error;
-                }
-                throw new Error(reportError("Error while fetching work request to be displayed", error));
-            });
-    }, [workRequestIdParam]);
-
-    function handleBack() {
-        navigate("/WorkRequestList");
+    if (!workRequestId || loading) {
+        return <div className="loadingData">Ładowanie danych</div>;
     }
 
-    function handleEdit() {
-        navigate(`/WorkRequestEdit/update/${workRequestIdParam}`);
+    if (error) {
+        return <div className="errorState">Błąd podczas ładowania danych</div>;
     }
 
-    async function handleDelete() {
-        if (workRequestIdParam === undefined || workRequest === undefined) {
-            return;
-        }
-
-        const ok = await confirm("Czy na pewno chcesz usunąć to zlecenie?");
-        if (!ok) {
-            return;
-        }
-
-        const result = await workRequestService.deleteWorkRequest(workRequestIdParam);
-        if (result.success) {
-            navigate("/WorkRequestList");
-            return;
-        }
-
-        throw new Error(reportError(result.message, result.details));
+    if (!workRequest) {
+        return <div className="notFoundState">Activity nie jest załadowane</div>;
     }
 
-    function handleDone() {
-        navigate("/ActivityEdit/promoteWorkRequest/" + workRequestIdParam);
+    if (!currentUser) {
+        return <div className="notFoundState">User nie jest załadowany</div>;
     }
 
-    function WorkRequestCompletness({ workRequest }: { workRequest: Schema["WorkRequest"]["type"]}) {
-        if (workRequest.completed) {
-            const linkTarget = "/ActivityDetails/" + workRequest.completedAs;
-            return <p data-testid="work-request-completed-message">Zlecenie wykonane. <NavLink to={linkTarget}>Przejdź do czynności</NavLink></p>;
-        }
-
-        return <p data-testid="work-request-pending-message">Zlecenie niewykonane</p>;
-    }
 
     if (workRequest === undefined) {
         return <>
@@ -116,12 +71,22 @@ function WorkRequestDetails({users}: {users: Map<string, User>}) {
         </div>
         <div>
             <button data-testid="back-button" type="button" onClick={handleBack}>Wróć</button>
-            <button data-testid="edit-button" type="button" onClick={handleEdit}>Edytuj</button>
-            <button data-testid="done-button" type="button" onClick={handleDone} disabled={workRequest.completed}>Zrobione</button>
-            <button data-testid="delete-button" type="button" onClick={handleDelete}>Usuń</button>
+            <button data-testid="edit-button" type="button" onClick={() => handleEdit(workRequestId)}>Edytuj</button>
+            <button data-testid="done-button" type="button" onClick={() => handleDone(workRequestId)} disabled={workRequest.completed}>Zrobione</button>
+            <button data-testid="delete-button" type="button" onClick={() => handleDelete(workRequestId)}>Usuń</button>
         </div>
         {dialog}
     </>;
 }
+
+function WorkRequestCompletness({ workRequest }: { workRequest: Schema["WorkRequest"]["type"]}) {
+    if (workRequest.completed) {
+        const linkTarget = "/ActivityDetails/" + workRequest.completedAs;
+        return <p data-testid="work-request-completed-message">Zlecenie wykonane. <NavLink to={linkTarget}>Przejdź do czynności</NavLink></p>;
+    }
+
+    return <p data-testid="work-request-pending-message">Zlecenie niewykonane</p>;
+}
+
 
 export default WorkRequestDetails;

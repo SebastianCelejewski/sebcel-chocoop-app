@@ -1,40 +1,48 @@
-import { generateClient } from "aws-amplify/data";
-import type { Schema } from "../../../../amplify/data/resource";
+import { useNavigate } from "react-router";
+import { useConfirm } from "../../../hooks/useConfirm";
 import reportError from "../../../utils/reportError";
+import ActivityService from "../../../services/ActivityService";
 
-const client = generateClient<Schema>();
+const activityService = ActivityService();
 
 export function useActivityActions() {
-  async function deleteActivity(id: string) {
-    try {
-      await client.models.Activity.delete({ id });
-    } catch (error) {
-      throw new Error(reportError("Error deleting activity: " + error));
+
+  const navigate = useNavigate();
+  const { confirm, dialog } = useConfirm();
+
+  function handleBack() {
+    navigate("/ActivityList/")
+  }
+  
+  function handleEdit(activityId: string) {
+    navigate(`/ActivityEdit/update/${activityId}`)
+  }
+  
+  async function handleDelete(activityId: string) {
+    const ok = await confirm("Czy na pewno usunąć aktywność?");
+    if (!ok) return;
+
+    const result = await activityService.deleteActivity(activityId);
+    if (result.success) {
+      navigate("/ActivityList");
+      return;
     }
+
+    throw new Error(reportError(result.message, result.details));
   }
 
-  async function addReaction(input: {
-    activityId: string;
-    userId: string;
-    reaction: string;
-  }) {
-    try {
-      const result = await client.models.Reaction.create({
-        activityId: input.activityId,
-        user: input.userId,
-        reaction: input.reaction,
-      });
-
-      if (!result.data) {
-        reportError("Failed to create reaction: " + JSON.stringify(result));
-      }
-    } catch (error) {
-      throw new Error(reportError("Error creating reaction: " + error));
+  async function handleAddReaction(activityId: string, userId: string, reaction: string) {
+    const result = await activityService.addReaction(activityId, userId, reaction);
+    if (!result.success) {
+      reportError("Failed to create reaction: " + JSON.stringify(result));
     }
   }
 
   return {
-    deleteActivity,
-    addReaction,
+    handleBack,
+    handleEdit,
+    handleDelete,
+    handleAddReaction,
+    dialog
   };
 }
