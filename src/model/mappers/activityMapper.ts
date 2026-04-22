@@ -21,7 +21,6 @@ function mapActivityModelToActivityFormState(model: Schema["Activity"]["type"] |
 }
 
 function mapActivityFormStateToActivityModel(activity: ActivityFormState) {
-    console.log("Mapping activity form state to activity model. Input state: ", JSON.stringify(activity));
     if (activity.date === undefined) {
         throw new Error(reportError("State activityDate is undefined during creation of a new activity object"))
     }

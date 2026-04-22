@@ -1,5 +1,6 @@
 import { dateToString } from "../../utils/dateUtils";
 import { List, AutoSizer, CellMeasurer, CellMeasurerCache } from 'react-virtualized';
+import { useEffect } from "react";
 
 import User from "../../model/User";
 import { ReactionsFromAllUsers } from "../../components/reactions";
@@ -13,10 +14,12 @@ const cache = new CellMeasurerCache({
 
 function ActivityList({users}: {users: Map<string, User>}) {
 
-    const {activities, reactions} = useActivityListDetails();
+    const {activities, reactions, loadMore, hasMore, loading} = useActivityListDetails();
     const {createActivity, showActivity, navigateToWorkRequests} = useActivityListActions();
 
-    cache.clearAll()
+    useEffect(() => {
+        cache.clearAll();
+    }, [activities.length]);
 
     if (activities.length == 0) {
         return <>
@@ -72,6 +75,11 @@ function ActivityList({users}: {users: Map<string, User>}) {
                         rowHeight={cache.rowHeight}
                         rowRenderer={renderRow}
                         rowCount={activities.length}
+                        onRowsRendered={({ stopIndex }) => {
+                            if (hasMore && !loading && stopIndex >= activities.length - 5) {
+                                loadMore();
+                            }
+                        }}
                         overscanRowCount={3}
                     />
                 )

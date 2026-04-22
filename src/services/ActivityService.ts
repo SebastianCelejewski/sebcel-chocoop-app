@@ -10,23 +10,15 @@ export default function ActivityService() {
     
     const client = generateClient<Schema>();
 
-    class ActivitiesQueryResult {
-        items: Array<Schema["Activity"]["type"]> = []
-    }
-
     class ReactionsQueryResult {
         items: Array<Schema["Reaction"]["type"]> = []
     }
 
     async function createActivity(activity: ActivityFormState): Promise<OperationResult> {
-        console.log("Creating a new activity with the following data:", JSON.stringify(activity));
         const newActivity = createActivityObjectFromState(activity);
-        console.log("New activity object: ", JSON.stringify(newActivity));
 
         try {
-            console.log("Sending request");
             const createActivityResponse = await client.models.Activity.create(newActivity)
-            console.log("Received response: ", JSON.stringify(createActivityResponse));
 
             if (createActivityResponse.errors?.length) {
                 return failure("Failed to create a new activity in the database", createActivityResponse.errors);
@@ -73,16 +65,39 @@ export default function ActivityService() {
         }
     }
 
-    function observeActivities(onChange: (activities: Array<Schema["Activity"]["type"]>) => void) {
-        const activitiesQuery = client.models.Activity.observeQuery().subscribe({
-            next: (data: ActivitiesQueryResult) => {
-                onChange(data.items);
+async function getActivitiesPage(
+        selectedUser?: string,
+        nextToken?: string | null,
+        limit: number = 20
+    ) {
+        try {
+            if (selectedUser) {
+                return await client.models.Activity.listActivityByUserAndDate(
+                    {
+                        user: selectedUser
+                    },
+                    {
+                        sortDirection: "DESC",
+                        limit,
+                        nextToken: nextToken ?? undefined
+                    }
+                );
             }
-        });
 
-        return () => {
-            activitiesQuery.unsubscribe();
-        };
+            return await client.models.Activity.listActivityByScopeAndDate(
+                {
+                    scope: "ALL"
+                },
+                {
+                    sortDirection: "DESC",
+                    limit,
+                    nextToken: nextToken ?? undefined
+                }
+            );
+
+        } catch (error) {
+            throw new Error(reportError("Failed to fetch activities page", error));
+        }
     }
 
     function observeReactions(onChange: (reactions: Array<Schema["Reaction"]["type"]>) => void) {
@@ -127,7 +142,7 @@ export default function ActivityService() {
         updateActivity,
         deleteActivity,
         getActivity,
-        observeActivities,
+        getActivitiesPage,
         addReaction,
         observeReactions
     }

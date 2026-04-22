@@ -46,7 +46,7 @@ export function useActivityEditDetails(operation?: ActivityOperation, objectId?:
         comment: "",
         requestedAs: undefined
       }
-      console.log("Creating empty activity with the following data: ", JSON.stringify(emptyActivity));
+
       setActivity(emptyActivity);
       setLoading(false);
       setError(null);
