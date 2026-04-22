@@ -5,8 +5,7 @@ function WhatsNew() {
             <h1>Co nowego w aplikacji</h1>
             <p className="label"><b>Wersja 0.5.0</b></p>
             <ul>
-                <li>...</li>
-                <li>...</li>
+                <li>Przyspieszenie działania aplikacji na liście czynności</li>
             </ul>
 
             <p className="label"><b>Wersja 0.4.13</b></p>
