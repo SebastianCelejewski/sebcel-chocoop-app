@@ -6,6 +6,7 @@ function WhatsNew() {
             <p className="label"><b>Wersja 0.5.0</b></p>
             <ul>
                 <li>Przyspieszenie działania aplikacji na liście czynności</li>
+                <li>Dodanie możliwości filtrowania (moje czynności/czynności całej rodziny)</li>
             </ul>
 
             <p className="label"><b>Wersja 0.4.13</b></p>

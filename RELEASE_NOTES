@@ -86,3 +86,5 @@
   - Unification of activities and work requests GUI code
 - Performance improvements
   - Introduction of indices
+- Activity list filtering
+  - Activities performed by all users or activities performed by current user

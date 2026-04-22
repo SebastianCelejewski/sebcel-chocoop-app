@@ -4,6 +4,7 @@ import { useEffect } from "react";
 
 import User from "../../model/User";
 import { ReactionsFromAllUsers } from "../../components/reactions";
+import { useCurrentUser } from "../../hooks/useCurrentUser";
 import { useActivityListActions } from "./hooks/useActivityListActions";
 import { useActivityListDetails } from "./hooks/useActivityListDetails";    
 
@@ -14,14 +15,15 @@ const cache = new CellMeasurerCache({
 
 function ActivityList({users}: {users: Map<string, User>}) {
 
-    const {activities, reactions, loadMore, hasMore, loading} = useActivityListDetails();
+    const currentUser = useCurrentUser();
+    const {activities, reactions, loadMore, hasMore, loading, selectedUser, setUser} = useActivityListDetails();
     const {createActivity, showActivity, navigateToWorkRequests} = useActivityListActions();
 
     useEffect(() => {
         cache.clearAll();
     }, [activities.length]);
 
-    if (activities.length == 0) {
+    if ((loading && activities.length === 0) || !currentUser) {
         return <>
             <p className="pageTitle" data-testid="activity-list-page" onClick={navigateToWorkRequests}>Lista wykonanych czynności</p>
             <div className="loadingData">Ładowanie danych</div>
@@ -30,6 +32,8 @@ function ActivityList({users}: {users: Map<string, User>}) {
             </div>
         </>
     }
+
+    const myUserId = currentUser.userId;
 
     function renderRow({ index, key, style, parent }: { index: number, key: string, style: React.CSSProperties, parent: any}) {
         const activity = activities[index];
@@ -63,7 +67,25 @@ function ActivityList({users}: {users: Map<string, User>}) {
 
     return <>
         <h2 className="pageTitle" data-testid="activity-list-page" onClick={navigateToWorkRequests}>Lista wykonanych czynności</h2>
-
+        <p>
+                <input
+                    type="radio"
+                    name="activityScope"
+                    id="myActivities"
+                    checked={!!selectedUser}
+                    onChange={() => setUser(myUserId)}
+                />
+                <label htmlFor="myActivities">Mój udział</label>
+                &nbsp;&nbsp;
+                <input
+                    type="radio"
+                    name="activityScope"
+                    id="allActivities"
+                    checked={!selectedUser}
+                    onChange={() => setUser(undefined)}
+                />
+                <label htmlFor="allActivities">Udział całej rodziny</label>
+            </p>
         <ul className="entityList">
             <AutoSizer>
             {
