@@ -4,6 +4,7 @@ export type ActivityFormState = {
   user: string;
   type: string;
   exp: string;
+  scope: string;
   comment: string;
   requestedAs?: string;
 }

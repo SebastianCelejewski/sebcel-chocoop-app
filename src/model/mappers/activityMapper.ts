@@ -15,7 +15,8 @@ function mapActivityModelToActivityFormState(model: Schema["Activity"]["type"] |
       type: model.type,
       exp: model.exp.toString(),
       comment: model.comment ?? "",
-      requestedAs: model.requestedAs ?? undefined
+      requestedAs: model.requestedAs ?? undefined,
+      scope: model.scope
   }
 }
 
@@ -39,7 +40,8 @@ function mapActivityFormStateToActivityModel(activity: ActivityFormState) {
         type: activity.type,
         exp: Number(activity.exp),
         comment: activity.comment,
-        requestedAs: activity.requestedAs
+        requestedAs: activity.requestedAs,
+        scope: activity.scope
     }
 }
 

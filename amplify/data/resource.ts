@@ -1,7 +1,7 @@
 import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
 
 const schema = a.schema({
-    Activity: a
+   Activity: a
         .model({
             id: a.id().required(),
             user: a.string().required(),
@@ -10,8 +10,13 @@ const schema = a.schema({
             exp: a.integer().required(),
             comment: a.string().required(),
             requestedAs: a.string(),
+            scope: a.string().required(),
             reactions: a.hasMany("Reaction", "activityId")
         })
+        .secondaryIndexes((index) => [
+            index("scope").sortKeys(["date"]),
+            index("user").sortKeys(["date"])
+        ])
         .authorization((allow) => [allow.authenticated()]),
     WorkRequest: a
         .model({
