@@ -78,3 +78,11 @@
 - Tables no longer contain zeroes for days somebody did nothing
 - Fixed bug for page titles for creation and modification of an activity
 - Expanded README
+
+## Version v0.5.0
+- Heavy refactoring
+  - Introduction of services layer
+  - Refactoring of work requests GUI
+  - Unification of activities and work requests GUI code
+- Performance improvements
+  - Introduction of indices

@@ -1,8 +1,8 @@
 import User from "../model/User";
 import { WorkRequestFormState } from "../model/WorkRequestFormState";
 import TemplateButtons from "./templateButtons";
-import { WorkRequestValidationResult } from "../model/WorkRequestValidationResult";
-import { urgencyList } from "../model/Urgency"
+import { WorkRequestValidationResult } from "../model/ValidationResult";
+import { Urgency, urgencyList } from "../model/Urgency"
 
 export function WorkRequestForm(
     {
@@ -40,7 +40,7 @@ export function WorkRequestForm(
                 </div>
 
                 <p className="label">Zleceniodawca</p>
-                {validationResult.createdBy ? (<p className="validationMessage">{validationResult.user}</p>) : (<></>)}
+                {validationResult.createdBy ? (<p className="validationMessage">{validationResult.createdBy}</p>) : (<></>)}
                 <p><select
                     id="workRequestCreatedBy"
                     data-testid="work-request-created-by-input"

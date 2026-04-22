@@ -1,7 +1,7 @@
 import User from "../model/User";
 import { ActivityFormState } from "../model/ActivityFormState";
 import TemplateButtons from "./templateButtons";
-import { ActivityValidationResult } from "../model/ActivityValidationResult";
+import { ActivityValidationResult } from "../model/ValidationResult";
 
 const currentDateTimeUTC = new Date()
 const timeZoneOffset = currentDateTimeUTC.getTimezoneOffset()

@@ -37,14 +37,17 @@ export function useActivityEditDetails(operation?: ActivityOperation, objectId?:
     let aborted = false;
 
     const createEmptyActivity = function () {
-      setActivity({
+      const emptyActivity = {
         date: getCurrentDate(),
         user: currentUser.userId,
         type: "",
         exp: "",
+        scope: "ALL",
         comment: "",
         requestedAs: undefined
-      });
+      }
+      console.log("Creating empty activity with the following data: ", JSON.stringify(emptyActivity));
+      setActivity(emptyActivity);
       setLoading(false);
       setError(null);
     }

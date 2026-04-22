@@ -3,7 +3,6 @@ import { useParams } from "react-router";
 import { useCurrentUser } from "../../hooks/useCurrentUser"
 
 import User from "../../model/User";
-import { urgencyList, Urgency } from "../../model/Urgency";
 
 import { WorkRequestFormState } from "../../model/WorkRequestFormState";
 import { useWorkRequestEditDetails } from "./hooks/useWorkRequestEditDetails"
@@ -12,9 +11,6 @@ import { WorkRequestOperations, WorkRequestOperation } from "../../model/WorkReq
 import { WorkRequestForm } from "../../components/workRequestForm";
 import { WorkRequestValidationResult } from "../../model/ValidationResult";
 
-import WorkRequestService from "../../services/WorkRequestService";
-import TemplateButtons from "../../components/templateButtons"
-
 const pageTitleMap: Record<WorkRequestOperation, string> = {
   [WorkRequestOperations.CREATE]: "Dodawanie zlecenia",
   [WorkRequestOperations.UPDATE]: "Edycja zlecenia"
@@ -22,28 +18,6 @@ const pageTitleMap: Record<WorkRequestOperation, string> = {
 
 function getPageTitle(operation?: WorkRequestOperation) {
   return operation ? pageTitleMap[operation] : "??";
-}
-
-type ValidationState = {
-    createdBy?: string;
-    type?: string;
-    exp?: string;
-    urgency?: string;
-};
-
-const workRequestService = WorkRequestService();
-
-function createEmptyWorkRequest(createdBy: string): WorkRequestFormState {
-    return {
-        createdDate: getCurrentDate(),
-        createdBy,
-        type: "",
-        exp: "",
-        urgency: "0",
-        instructions: "",
-        completed: false,
-        completedAs: undefined
-    };
 }
 
 function WorkRequestEdit({users}: {users: Map<string, User>}) {
@@ -92,7 +66,7 @@ function WorkRequestEdit({users}: {users: Map<string, User>}) {
         await handleSubmit(workRequest, operation);
     }
 
-    function hasErrors(validationResult: ActivityValidationResult) {
+    function hasErrors(validationResult: WorkRequestValidationResult): boolean {
         return Object.keys(validationResult).length > 0
     }
 
@@ -100,8 +74,8 @@ function WorkRequestEdit({users}: {users: Map<string, User>}) {
         handleCancel(operation, workRequestId);
     }
 
-    function validateInputs(form: ActivityFormState): ActivityValidationResult {
-        const errors: ActivityValidationResult = {};
+    function validateInputs(form: WorkRequestFormState): WorkRequestValidationResult {
+        const errors: WorkRequestValidationResult = {};
 
         if (!form.createdDate) errors.createdDate = "Wpisz datę utworzenia zlecenia";
         if (!form.createdBy) errors.createdBy = "Wpisz zleceniodawcę";

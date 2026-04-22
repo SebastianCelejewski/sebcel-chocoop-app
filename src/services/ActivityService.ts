@@ -19,10 +19,14 @@ export default function ActivityService() {
     }
 
     async function createActivity(activity: ActivityFormState): Promise<OperationResult> {
+        console.log("Creating a new activity with the following data:", JSON.stringify(activity));
         const newActivity = createActivityObjectFromState(activity);
+        console.log("New activity object: ", JSON.stringify(newActivity));
 
         try {
+            console.log("Sending request");
             const createActivityResponse = await client.models.Activity.create(newActivity)
+            console.log("Received response: ", JSON.stringify(createActivityResponse));
 
             if (createActivityResponse.errors?.length) {
                 return failure("Failed to create a new activity in the database", createActivityResponse.errors);

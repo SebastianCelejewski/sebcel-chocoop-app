@@ -1,8 +1,7 @@
 import type { Schema } from "../../../amplify/data/resource";
 import type { ActivityFormState } from "../../model/ActivityFormState";
 import { AuthUser } from "aws-amplify/auth";
-import { toLocalDate, getCurrentDate } from "../../utils/dateUtils";
-import reportError from "../../utils/reportError"
+import { getCurrentDate } from "../../utils/dateUtils";
 
 function mapWorkRequestModelToActivityFormState(model: Schema["WorkRequest"]["type"] | null, currentUser: AuthUser): ActivityFormState | null {
   if (model === null) {
@@ -15,6 +14,7 @@ function mapWorkRequestModelToActivityFormState(model: Schema["WorkRequest"]["ty
     type: model.type,
     exp: model.exp.toString(),
     comment: "",
+    scope: "ALL",
     requestedAs: model.id
   };
 }

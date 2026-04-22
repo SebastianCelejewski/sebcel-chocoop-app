@@ -75,5 +75,5 @@ export function useWorkRequestEditDetails(operation?: WorkRequestOperation, work
     };
   }, [workRequestId, operation, currentUser]);
 
-  return { workRequest, setWorkRequest, workRequest, loading, error };
+  return { workRequest, setWorkRequest, loading, error };
 }
