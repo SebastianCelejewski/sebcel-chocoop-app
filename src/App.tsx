@@ -8,6 +8,9 @@ import AppMenu from "./components/appMenu";
 import UserMenu from "./components/userMenu";
 import Routing from "./components/routing";
 
+console.log("Env:" + import.meta.env.VITE_CHOCOOP_ENV);
+console.log("Bus name: " + import.meta.env.VITE_EVENT_BUS_NAME);
+
 function App() {
   return (
     <Authenticator>
@@ -38,7 +41,7 @@ function AppContent() {
       <>
         <h1>Chores Cooperative</h1>
         <p className="versionInfo">{version}</p>
-        <div>Trwa uruchamianie aplikacji...</div>
+        <div>Ładowanie danych...</div>
       </>
     );
   }

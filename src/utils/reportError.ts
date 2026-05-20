@@ -4,7 +4,13 @@ function reportError(message: string, cause?: any) {
     console.log(errorGuid + ": " + message)
     
     if (cause !== undefined) {
-        console.log(errorGuid + ": " + JSON.stringify(cause))
+        if (cause instanceof Error) {
+            console.log(errorGuid + ": " + JSON.stringify(cause.message))
+            console.log(errorGuid + ": " + JSON.stringify(cause.stack))
+        } else {
+            console.log(errorGuid + ": " + JSON.stringify(cause))
+        }
+
     }
     
     alert("Wystąpił błąd. Powiadom twórcę aplikacji wysyłając mu ten identyfikator błędu: " + errorGuid)

@@ -12,7 +12,11 @@ import { Duration } from "aws-cdk-lib/core";
 
 import { expStatsUpdateFunction } from "./functions/exp-stats-update-function/resource";
 
-const envName = process.env.AWS_BRANCH || "unknown";
+const envName = process.env.CHOCOOP_ENV;
+
+if (!envName) {
+    throw new Error("CHOCOOP_ENV is not set");
+}
 
 const backend = defineBackend({
     auth,
@@ -160,7 +164,23 @@ const cognitoListUsersPolicy = new Policy(
     }
 );
 
+const eventBridgePublishPolicy = new Policy(
+    Stack.of(backend.auth.resources.userPool),
+    "chocoop-eventbridge-publish-policy-" + envName,
+    {
+        statements: [
+            new PolicyStatement({
+                effect: Effect.ALLOW,
+                actions: ["events:PutEvents"],
+                resources: [`arn:aws:events:eu-central-1:953201351151:event-bus/sebcel-chocoop-infra-bus-${envName}`],
+            }),
+        ],
+    }
+);
+
+
 backend.auth.resources.authenticatedUserIamRole.attachInlinePolicy(cognitoListUsersPolicy);
+backend.auth.resources.authenticatedUserIamRole.attachInlinePolicy(eventBridgePublishPolicy);
 
 const { amplifyDynamoDbTables } = backend.data.resources.cfnResources;
 

@@ -1,11 +1,15 @@
 import { defineFunction } from "@aws-amplify/backend";
 
-const envName = process.env.AMPLIFY_BRANCH || 'dev';
+const envName = process.env.CHOCOOP_ENV;
+
+if (!envName) {
+    throw new Error("CHOCOOP_ENV is not set");
+}
 
 export const expStatsUpdateFunction = defineFunction({
     name: "chocoop-exp-stats-update-function-" + envName,
     timeoutSeconds: 10,
     environment: {
-        BRANCH_NAME: process.env.AWS_BRANCH || 'unknown',
+        BRANCH_NAME: envName
     }
 });

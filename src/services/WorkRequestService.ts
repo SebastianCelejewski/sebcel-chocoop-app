@@ -5,6 +5,8 @@ import { WorkRequestFormState} from "../model/WorkRequestFormState";
 import { OperationResult } from "../model/OperationResult";
 import { success, failure } from "../model/OperationResult";
 import { mapWorkRequestFormStateToWorkRequestModel } from "../model/mappers/workRequestMapper";
+import { publishWorkRequestCreated } from "../events/workRequests/publishWorkRequestCreated";
+import { urgencyList } from "../model/Urgency";
 
 export default function WorkRequestService() {
     
@@ -28,6 +30,16 @@ export default function WorkRequestService() {
             }
 
             const workRequestId = createWorkRequestResponse.data.id;
+
+            await publishWorkRequestCreated({
+                workRequestId: createWorkRequestResponse.data.id,
+                createdBy: createWorkRequestResponse.data.createdBy,
+                createdDate: createWorkRequestResponse.data.createdDate,
+                type: createWorkRequestResponse.data.type,
+                exp: createWorkRequestResponse.data.exp,
+                urgency: urgencyList[createWorkRequestResponse.data.urgency].label
+            });
+
             return success(workRequestId);
         }
         catch(error) {

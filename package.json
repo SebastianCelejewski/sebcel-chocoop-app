@@ -12,6 +12,7 @@
   "dependencies": {
     "@aws-amplify/ui-react": "^6.5.5",
     "@aws-sdk/client-dynamodb": "^3.914.0",
+    "@aws-sdk/client-eventbridge": "^3.1045.0",
     "@aws-sdk/client-ssm": "^3.914.0",
     "@react-router/node": "^7.9.2",
     "@react-router/serve": "^7.9.2",
