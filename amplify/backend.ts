@@ -179,6 +179,7 @@ const eventBridgePublishPolicy = new Policy(
 );
 
 
+/*
 backend.auth.resources.authenticatedUserIamRole.attachInlinePolicy(cognitoListUsersPolicy);
 backend.auth.resources.authenticatedUserIamRole.attachInlinePolicy(eventBridgePublishPolicy);
 
@@ -218,3 +219,4 @@ plan.addSelection("chocoop-backup-plan-selection-" + envName, {
     resources: myTables.map((table) => BackupResource.fromDynamoDbTable(table)),
     allowRestores: true,
 });
+*/
