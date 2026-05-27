@@ -31,3 +31,6 @@ amplifyconfiguration*
 .env.*
 test-results/
 .auth/
+
+*.cmd
+*.bat
