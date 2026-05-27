@@ -9,7 +9,7 @@ const envName = process.env.BRANCH_NAME || 'unknown';
 
 const logger = new Logger({
     logLevel: "INFO",
-    serviceName: "chocoop-exp-stats-update-function",
+    serviceName: "sebcel-chocoop-exp-stats-update-function",
 });
 
 async function getParameter(parameterPath: string): Promise<string> {
@@ -41,7 +41,7 @@ async function putData(tableName: string, periodType: string, period: string, us
 
 const clearStatistics = async () => {
     console.log("Clearing the experience statistics table")
-    const expStatsTableName = await getParameter(`/chocoop/exp-stats-table-name-${envName}`);
+    const expStatsTableName = await getParameter(`/sebcel-chocoop-app/exp-stats-table-name-${envName}`);
 
     const params = {
         TableName: expStatsTableName,
@@ -69,8 +69,8 @@ const clearStatistics = async () => {
 
 const rebuildStatistics = async () => {
     console.log("Rebuilding the experience statistics table")
-    const activityTableName = await getParameter(`/chocoop/activity-table-name-${envName}`,);
-    const expStatsTableName = await getParameter(`/chocoop/exp-stats-table-name-${envName}`);
+    const activityTableName = await getParameter(`/sebcel-chocoop-app/activity-table-name-${envName}`,);
+    const expStatsTableName = await getParameter(`/sebcel-chocoop-app/exp-stats-table-name-${envName}`);
 
     const params = {
         TableName: activityTableName,

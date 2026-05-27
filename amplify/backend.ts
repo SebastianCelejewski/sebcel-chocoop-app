@@ -41,25 +41,25 @@ cfnUserPool.policies = {
 
 const activityTableParam = new cdk.aws_ssm.StringParameter(
     Stack.of(activityTable),
-    "chocoop-activity-table-name-param-" + envName,
+    "sebcel-chocoop-activity-table-name-param-" + envName,
     {
-        parameterName: `/chocoop/activity-table-name-${envName}`,
+        parameterName: `/sebcel-chocoop-app/activity-table-name-${envName}`,
         stringValue: activityTable.tableName,
     }
 );
 
 const expStatsTableParam = new cdk.aws_ssm.StringParameter(
     Stack.of(activityTable),
-    "chocoop-expstats-table-name-param-" + envName,
+    "sebcel-chocoop-expstats-table-name-param-" + envName,
     {
-        parameterName: `/chocoop/exp-stats-table-name-${envName}`,
+        parameterName: `/sebcel-chocoop-app/exp-stats-table-name-${envName}`,
         stringValue: expStatsTable.tableName,
     }
 );
 
 const dynamodbActivitiesStreamDataPolicy = new Policy(
     Stack.of(activityTable),
-    "chocoop-dynamodb-stream-data-policy-" + envName,
+    "sebcel-chocoop-dynamodb-stream-data-policy-" + envName,
     {
         statements: [
             new PolicyStatement({
@@ -78,7 +78,7 @@ const dynamodbActivitiesStreamDataPolicy = new Policy(
 
 const dynamodbActivitiesReadPolicy = new Policy(
     Stack.of(activityTable),
-    "chocoop-dynamodb-activities-read-policy-" + envName,
+    "sebcel-chocoop-dynamodb-activities-read-policy-" + envName,
     {
         statements: [
         new PolicyStatement({
@@ -95,7 +95,7 @@ const dynamodbActivitiesReadPolicy = new Policy(
 
 const dynamodbExpStatsReadWritePolicy = new Policy(
     Stack.of(activityTable),
-    "chocoop-dynamodb-exp-stats-readwrite-policy-" + envName,
+    "sebcel-chocoop-dynamodb-exp-stats-readwrite-policy-" + envName,
     {
         statements: [
         new PolicyStatement({
@@ -114,7 +114,7 @@ const dynamodbExpStatsReadWritePolicy = new Policy(
         
 const parametersReadPolicy = new Policy(
     Stack.of(activityTable),
-    "chocoop-parameters-read-policy-" + envName,
+    "sebcel-chocoop-parameters-read-policy-" + envName,
     {
         statements: [
         new PolicyStatement({
@@ -140,7 +140,7 @@ backend.expStatsUpdateFunction.resources.lambda.role?.attachInlinePolicy(dynamod
 
 const mapping = new EventSourceMapping(
     Stack.of(activityTable),
-    "chocoop-dynamodb-function-stream-mapping-" + envName,
+    "sebcel-chocoop-dynamodb-function-stream-mapping-" + envName,
     {
         target: backend.expStatsUpdateFunction.resources.lambda,
         eventSourceArn: activityTable.tableStreamArn,
@@ -152,7 +152,7 @@ mapping.node.addDependency(dynamodbActivitiesStreamDataPolicy);
 
 const cognitoListUsersPolicy = new Policy(
     Stack.of(backend.auth.resources.userPool),
-    "chocoop-cognito-list-users-policy-" + envName,
+    "sebcel-chocoop-cognito-list-users-policy-" + envName,
     {
         statements: [
             new PolicyStatement({
@@ -166,7 +166,7 @@ const cognitoListUsersPolicy = new Policy(
 
 const eventBridgePublishPolicy = new Policy(
     Stack.of(backend.auth.resources.userPool),
-    "chocoop-eventbridge-publish-policy-" + envName,
+    "sebcel-chocoop-eventbridge-publish-policy-" + envName,
     {
         statements: [
             new PolicyStatement({
@@ -179,7 +179,6 @@ const eventBridgePublishPolicy = new Policy(
 );
 
 
-/*
 backend.auth.resources.authenticatedUserIamRole.attachInlinePolicy(cognitoListUsersPolicy);
 backend.auth.resources.authenticatedUserIamRole.attachInlinePolicy(eventBridgePublishPolicy);
 
@@ -189,22 +188,22 @@ for (const table of Object.values(amplifyDynamoDbTables)) {
     table.pointInTimeRecoveryEnabled = true;
 }
 
-const backupStack = backend.createStack("chocoop-backup-stack-" + envName);
+const backupStack = backend.createStack("sebcel-chocoop-backup-stack-" + envName);
 const myTables = Object.values(backend.data.resources.tables);
 
-const vault = new BackupVault(backupStack, "chocoop-backup-vault-" + envName, {
-    backupVaultName: "chocoop-backup-vault-" + envName,
+const vault = new BackupVault(backupStack, "sebcel-chocoop-backup-vault-" + envName, {
+    backupVaultName: "sebcel-chocoop-backup-vault-" + envName,
 });
 
-const plan = new BackupPlan(backupStack, "chocoop-backup-plan-" + envName, {
-    backupPlanName: "chocoop-backup-plan-" + envName,
+const plan = new BackupPlan(backupStack, "sebcel-chocoop-backup-plan-" + envName, {
+    backupPlanName: "sebcel-chocoop-backup-plan-" + envName,
     backupVault: vault,
 });
 
 plan.addRule(
     new BackupPlanRule({
         deleteAfter: Duration.days(60),
-        ruleName: "chocoop-backup-plan-rule-" + envName,
+        ruleName: "sebcel-chocoop-backup-plan-rule-" + envName,
         scheduleExpression: Schedule.cron({
             minute: "0",
             hour: "0",
@@ -215,8 +214,7 @@ plan.addRule(
     })
 );
 
-plan.addSelection("chocoop-backup-plan-selection-" + envName, {
+plan.addSelection("sebcel-chocoop-backup-plan-selection-" + envName, {
     resources: myTables.map((table) => BackupResource.fromDynamoDbTable(table)),
     allowRestores: true,
 });
-*/
