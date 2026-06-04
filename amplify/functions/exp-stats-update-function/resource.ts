@@ -8,7 +8,7 @@ if (!envName) {
 
 export const expStatsUpdateFunction = defineFunction({
     name: "sebcel-chocoop-exp-stats-update-function-" + envName,
-    timeoutSeconds: 10,
+    timeoutSeconds: 20,
     environment: {
         BRANCH_NAME: envName
     }

@@ -88,3 +88,25 @@
   - Introduction of indices
 - Activity list filtering
   - Activities performed by all users or activities performed by current user
+
+## Version v0.5.1
+- EventBridge integration
+  - Added frontend integration with AWS EventBridge.
+  - Introduced generic event publishing infrastructure.
+  - Added publishing of `WorkRequestCreated` domain events.
+- Environment-aware configuration
+  - Added explicit `CHOCOOP_ENV` handling and validation.
+  - Added environment-aware resolution of AWS resource names and SSM parameters.
+  - Added configuration propagation for Lambda functions and frontend components.
+- Experience statistics processing
+  - Added environment-aware configuration for the experience statistics update Lambda.
+  - Added SSM parameter integration for activity and statistics table lookup.
+  - Added IAM permissions required for statistics processing resources.
+- Error diagnostics
+  - Improved client-side error logging for JavaScript `Error` objects.
+  - Added stack trace logging support.
+- Frontend diagnostics
+  - Added startup diagnostics and environment logging.
+  - Added Event Bus initialization logging.
+- Dependencies
+  - Added AWS EventBridge SDK dependencies required for event publishing.

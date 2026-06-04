@@ -7,13 +7,21 @@ import { fetchAllUsers } from "./utils/managementUtils";
 import AppMenu from "./components/appMenu";
 import UserMenu from "./components/userMenu";
 import Routing from "./components/routing";
+import { dateToString } from "./utils/dateUtils";
+import { signIn } from "aws-amplify/auth";
 
 console.log("Env:" + import.meta.env.VITE_CHOCOOP_ENV);
 console.log("Bus name: " + import.meta.env.VITE_EVENT_BUS_NAME);
 
 function App() {
   return (
-    <Authenticator>
+    <Authenticator
+      services={{
+        async handleSignIn(input) {
+          return signIn({username: input.username, password: input.password, options: {authFlowType: "USER_PASSWORD_AUTH"}});
+        }
+      }}
+    >
       <AppContent />
     </Authenticator>
   );
@@ -59,6 +67,8 @@ function AppContent() {
           Witaj, <span data-testid="user-nickname" data-currentuserid={user.userId}>{userNickname}</span>
         </p>
       </div>
+
+      <div className="currentDate">{dateToString("2026-06-04")}</div>
 
       <div style={{ clear: 'both' }} />
 
