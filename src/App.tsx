@@ -30,7 +30,7 @@ function App() {
 function AppContent() {
   const { user, signOut } = useAuthenticator();
 
-  const version = "0.5.2";
+  const version = "0.5.3";
   const [userNickname, setUserNickname] = useState<string | null>(null);
   const [allUsers, setAllUsers] = useState<Map<string, User> | null>(null);
 

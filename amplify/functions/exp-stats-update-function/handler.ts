@@ -1,7 +1,7 @@
 import type { DynamoDBStreamHandler } from "aws-lambda";
 import { Logger } from "@aws-lambda-powertools/logger";
 import { SSMClient, GetParameterCommand } from "@aws-sdk/client-ssm";
-import { DynamoDBClient, ScanCommand, DeleteItemCommand, PutItemCommand, PutItemCommandInput, PutItemCommandOutput, AttributeValue } from "@aws-sdk/client-dynamodb";
+import { DynamoDBClient, UpdateItemCommand } from "@aws-sdk/client-dynamodb";
 
 const ssmClient = new SSMClient();
 const dynamoDbClient = new DynamoDBClient({});
@@ -12,186 +12,98 @@ const logger = new Logger({
     serviceName: "sebcel-chocoop-exp-stats-update-function",
 });
 
-async function getParameter(parameterPath: string): Promise<string> {
-    const command = new GetParameterCommand({ Name: parameterPath });
-    const response = await ssmClient.send(command);
-    return response.Parameter?.Value || '';
+let expStatsTableNameCache: string | null = null;
+
+async function getExpStatsTableName(): Promise<string> {
+    if (expStatsTableNameCache) return expStatsTableNameCache;
+    const response = await ssmClient.send(new GetParameterCommand({
+        Name: `/sebcel-chocoop-app/exp-stats-table-name-${envName}`
+    }));
+    expStatsTableNameCache = response.Parameter?.Value || '';
+    return expStatsTableNameCache;
 }
 
-async function putData(tableName: string, periodType: string, period: string, user: string, exp: number) {
-    const partitionKey = `${periodType}-${period}-${user}`;
-
-    var putItemParams: PutItemCommandInput = {
+async function adjustStat(tableName: string, periodType: string, period: string, user: string, delta: number) {
+    const id = `${periodType}-${period}-${user}`;
+    await dynamoDbClient.send(new UpdateItemCommand({
         TableName: tableName,
-        Item: {
-            "id": { S: partitionKey },
-            "periodType": { S: periodType },
-            "period": { S: period },
-            "user": { S: user as string },
-            "exp": { N: String(exp) },
-            "createdAt": { S: new Date().toISOString() },
-            "updatedAt": { S: new Date().toISOString() }
+        Key: { id: { S: id } },
+        UpdateExpression: "ADD #exp :delta SET #periodType = if_not_exists(#periodType, :periodType), #period = if_not_exists(#period, :period), #user = if_not_exists(#user, :user), createdAt = if_not_exists(createdAt, :now), updatedAt = :now",
+        ExpressionAttributeNames: {
+            "#exp": "exp",
+            "#periodType": "periodType",
+            "#period": "period",
+            "#user": "user"
         },
-        ReturnConsumedCapacity: "TOTAL",
-    };
-
-    const putItemRequest = new PutItemCommand(putItemParams);
-    await dynamoDbClient.send(putItemRequest);
+        ExpressionAttributeValues: {
+            ":delta": { N: String(delta) },
+            ":periodType": { S: periodType },
+            ":period": { S: period },
+            ":user": { S: user },
+            ":now": { S: new Date().toISOString() }
+        }
+    }));
 }
 
-const clearStatistics = async () => {
-    console.log("Clearing the experience statistics table")
-    const expStatsTableName = await getParameter(`/sebcel-chocoop-app/exp-stats-table-name-${envName}`);
-
-    const params = {
-        TableName: expStatsTableName,
-        ExclusiveStartKey: undefined as any
-    };
-
-    const request = new ScanCommand(params);
-    const response = await dynamoDbClient.send(request);
-    response.Items?.forEach((item: Record<string, AttributeValue>) => {
-        const id = item["id"]["S"];
-        if (id) {
-            const deleteParams = {
-                TableName: expStatsTableName,
-                Key: {
-                    "id": { S: id }
-                }
-            };
-            const deleteRequest = new DeleteItemCommand(deleteParams);
-            dynamoDbClient.send(deleteRequest)
-        }
-    });
-
-    console.log("The experience statistics table is cleared")
-}
-
-const rebuildStatistics = async () => {
-    console.log("Rebuilding the experience statistics table")
-    const activityTableName = await getParameter(`/sebcel-chocoop-app/activity-table-name-${envName}`,);
-    const expStatsTableName = await getParameter(`/sebcel-chocoop-app/exp-stats-table-name-${envName}`);
-
-    const params = {
-        TableName: activityTableName,
-        ExclusiveStartKey: undefined as any
-    };
-
-    var userNames = new Set<string>();
-    var dailyData = new Map<string, Map<string, number>>();
-    var monthlyData = new Map<string, Map<string, number>>();
-    var annualData = new Map<string, Map<string, number>>();
-    var totalData = new Map<string, number>();
-
-    console.log("Starting processing of the activities data")
-
-    let response;
-    do {
-        const request = new ScanCommand(params);
-        response = await dynamoDbClient.send(request);
-        console.log("Received " + response.Items?.length + " items from the database")
-        response.Items?.forEach((item: Record<string, AttributeValue>) => {
-            const date = item["date"]["S"];
-            const user = item["user"]["S"];
-            const exp = item["exp"]["N"];
-            
-            if (date === undefined || user === undefined || exp === undefined) {
-                console.log("Invalid data fetched from the database. Check date, user and exp");
-                return
-            }
-
-            const day = date.substring(0,10);
-            const month = date.substring(0, 7);
-            const year = date.substring(0, 4);
-
-            if (!(dailyData.has(day))) {
-                dailyData.set(day, new Map<string, number>());
-            } 
-            const dailyMap = dailyData.get(day) || new Map<string, number>();
-            if (!(dailyMap.has(user))) {
-                dailyMap.set(user, 0);
-            }
-            
-            if (!(monthlyData.has(month))) {
-                monthlyData.set(month, new Map());
-            } 
-            const monthlyMap = monthlyData.get(month) || new Map<string, number>();
-            if (!(monthlyMap.has(user))) {
-                monthlyMap.set(user, 0);
-            }
-            
-            if (!(annualData.has(year))) {
-                annualData.set(year, new Map());
-            } 
-            const annualMap = annualData.get(year) || new Map<string, number>();
-            if (!(annualMap.has(user))) {
-                annualMap.set(user, 0);
-            }
-
-            if (!(totalData.has(user))) {
-                totalData.set(user, 0);
-            }
-
-            dailyMap.set(user, (dailyMap.get(user) || 0) + parseInt(exp || "0"));
-            dailyData.set(day, dailyMap);
-
-            monthlyMap.set(user, (monthlyMap.get(user) || 0) + parseInt(exp || "0"));
-            monthlyData.set(month, monthlyMap);
-
-            annualMap.set(user, (annualMap.get(user) || 0) + parseInt(exp || "0"));
-            annualData.set(year, annualMap);
-
-            totalData.set(user, (totalData.get(user) || 0) + parseInt(exp || "0"));
-
-            userNames.add(user);
-        });
-        params.ExclusiveStartKey = response.LastEvaluatedKey;
-    } while (typeof response.LastEvaluatedKey !== "undefined");
-    
-    console.log("Processing of the activities data completed")
-
-    for (const [day, value] of dailyData) {
-        for (const user of userNames) {
-            if (value.has(user)) {
-                const exp = value.get(user as string) || 0;
-                await putData(expStatsTableName, "DAY", day, user, exp);
-            } 
-        }
-    }
-
-    for (const [month, value] of monthlyData) {
-        for (const user of userNames) {
-            if (value.has(user)) {
-                const exp = value.get(user as string) || 0
-                await putData(expStatsTableName, "MONTH", month, user, exp);
-            } 
-        }
-    }
-
-    for (const [year, value] of annualData) {
-        for (const user of userNames) {
-            if (value.has(user)) {
-                const exp = value.get(user as string) || 0
-                await putData(expStatsTableName, "YEAR", year, user, exp);
-            } 
-        }
-    }    
-
-    for (const user of userNames) {
-        if (totalData.has(user)) {
-            const exp = totalData.get(user as string) || 0
-            await putData(expStatsTableName, "TOTAL", "TOTAL", user, exp);
-        } 
-    }
-    
-    console.log("The experience statistics table is rebuilt")
+async function applyDelta(tableName: string, date: string, user: string, expDelta: number) {
+    const day = date.substring(0, 10);
+    const month = date.substring(0, 7);
+    const year = date.substring(0, 4);
+    await Promise.all([
+        adjustStat(tableName, "DAY", day, user, expDelta),
+        adjustStat(tableName, "MONTH", month, user, expDelta),
+        adjustStat(tableName, "YEAR", year, user, expDelta),
+        adjustStat(tableName, "TOTAL", "TOTAL", user, expDelta),
+    ]);
 }
 
 export const handler: DynamoDBStreamHandler = async (event) => {
-    await clearStatistics()
-    await rebuildStatistics()
+    const tableName = await getExpStatsTableName();
 
-    return {
-        batchItemFailures: []
-    };
+    for (const record of event.Records) {
+        const eventName = record.eventName;
+
+        if (eventName === "INSERT") {
+            const img = record.dynamodb?.NewImage;
+            const date = img?.date?.S;
+            const user = img?.user?.S;
+            const exp = img?.exp?.N;
+            if (!date || !user || !exp) {
+                logger.warn("INSERT record missing required fields", { record });
+                continue;
+            }
+            await applyDelta(tableName, date, user, parseInt(exp));
+
+        } else if (eventName === "REMOVE") {
+            const img = record.dynamodb?.OldImage;
+            const date = img?.date?.S;
+            const user = img?.user?.S;
+            const exp = img?.exp?.N;
+            if (!date || !user || !exp) {
+                logger.warn("REMOVE record missing required fields", { record });
+                continue;
+            }
+            await applyDelta(tableName, date, user, -parseInt(exp));
+
+        } else if (eventName === "MODIFY") {
+            const oldImg = record.dynamodb?.OldImage;
+            const newImg = record.dynamodb?.NewImage;
+            const oldDate = oldImg?.date?.S;
+            const oldUser = oldImg?.user?.S;
+            const oldExp = oldImg?.exp?.N;
+            const newDate = newImg?.date?.S;
+            const newUser = newImg?.user?.S;
+            const newExp = newImg?.exp?.N;
+            if (!oldDate || !oldUser || !oldExp || !newDate || !newUser || !newExp) {
+                logger.warn("MODIFY record missing required fields", { record });
+                continue;
+            }
+            if (oldExp !== newExp || oldDate !== newDate || oldUser !== newUser) {
+                await applyDelta(tableName, oldDate, oldUser, -parseInt(oldExp));
+                await applyDelta(tableName, newDate, newUser, parseInt(newExp));
+            }
+        }
+    }
+
+    return { batchItemFailures: [] };
 };

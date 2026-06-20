@@ -89,13 +89,6 @@
 - Activity list filtering
   - Activities performed by all users or activities performed by current user
 
-## Version v0.5.2
-- Current date displayed dynamically in the header
-- Automatic matching of new activities to open work requests
-  - When saving a new activity, the system looks for an open work request with a matching type
-  - If a match is found, a dialog asks whether the activity fulfils the work request
-  - On confirmation, the activity is linked to the work request and the work request is marked as completed
-
 ## Version v0.5.1
 - EventBridge integration
   - Added frontend integration with AWS EventBridge.
@@ -117,3 +110,16 @@
   - Added Event Bus initialization logging.
 - Dependencies
   - Added AWS EventBridge SDK dependencies required for event publishing.
+
+## Version v0.5.2
+- Current date displayed dynamically in the header
+- Automatic matching of new activities to open work requests
+  - When saving a new activity, the system looks for an open work request with a matching type
+  - If a match is found, a dialog asks whether the activity fulfils the work request
+  - On confirmation, the activity is linked to the work request and the work request is marked as completed
+
+## Version v0.5.3
+- Improved experience statistics processing
+  - Replaced full rebuild on every activity change with incremental delta updates (4 atomic DynamoDB writes per event instead of a full scan)
+  - Added nightly full recalculation Lambda triggered at 02:00 UTC as a self-healing safety net
+  - Execution time of the stream-triggered Lambda reduced from ~10-12 s to ~20-50 ms
