@@ -7,7 +7,7 @@ import { fetchAllUsers } from "./utils/managementUtils";
 import AppMenu from "./components/appMenu";
 import UserMenu from "./components/userMenu";
 import Routing from "./components/routing";
-import { dateToString } from "./utils/dateUtils";
+import { dateToString, getCurrentDate } from "./utils/dateUtils";
 import { signIn } from "aws-amplify/auth";
 
 console.log("Env:" + import.meta.env.VITE_CHOCOOP_ENV);
@@ -30,7 +30,7 @@ function App() {
 function AppContent() {
   const { user, signOut } = useAuthenticator();
 
-  const version = "0.5.0";
+  const version = "0.5.2";
   const [userNickname, setUserNickname] = useState<string | null>(null);
   const [allUsers, setAllUsers] = useState<Map<string, User> | null>(null);
 
@@ -68,7 +68,7 @@ function AppContent() {
         </p>
       </div>
 
-      <div className="currentDate">{dateToString("2026-06-04")}</div>
+      <div className="currentDate">{dateToString(getCurrentDate())}</div>
 
       <div style={{ clear: 'both' }} />
 

@@ -3,6 +3,11 @@ function WhatsNew() {
         <h2 className="pageTitle" data-testid="about-page">O aplikacji</h2>
         <ul className="richText">
             <h1>Co nowego w aplikacji</h1>
+            <p className="label"><b>Wersja 0.5.2</b></p>
+            <ul>
+                <li>Podczas dodawania nowej czynności aplikacja sprawdza czy istnieją zlecenia na tę czynność. Jeśli tak, to użytkownik może podpiąć nową czynność do istniejącego zlecenia. Zlecenie zostanie wtedy oznaczone jako wykonane.</li>
+            </ul>
+
             <p className="label"><b>Wersja 0.5.1</b></p>
             <ul>
                 <li>Dodanie informacji o bieżącej dacie, by użytkownik mógł łatwiej zorientować się czy w danym dniu już wpisywał swoje czynności, czy jeszcze nie</li>

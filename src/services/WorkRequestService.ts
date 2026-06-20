@@ -4,7 +4,7 @@ import reportError from "../utils/reportError"
 import { WorkRequestFormState} from "../model/WorkRequestFormState";
 import { OperationResult } from "../model/OperationResult";
 import { success, failure } from "../model/OperationResult";
-import { mapWorkRequestFormStateToWorkRequestModel } from "../model/mappers/workRequestMapper";
+import { mapWorkRequestFormStateToWorkRequestModel, mapWorkRequestModelToWorkRequestFormState } from "../model/mappers/workRequestMapper";
 import { publishWorkRequestCreated } from "../events/workRequests/publishWorkRequestCreated";
 import { urgencyList } from "../model/Urgency";
 
@@ -89,6 +89,25 @@ export default function WorkRequestService() {
         };
     }
 
+    async function findMatchingWorkRequests(activityType: string): Promise<WorkRequestFormState[]> {
+        const open = await listOpenWorkRequests();
+        return open.filter(wr => wr.type.toLowerCase() === activityType.toLowerCase());
+    }
+
+    async function listOpenWorkRequests(): Promise<WorkRequestFormState[]> {
+        try {
+            const { data, errors } = await client.models.WorkRequest.list();
+            if (errors?.length) {
+                throw errors;
+            }
+            return data
+                .filter(wr => !wr.completed)
+                .map(wr => mapWorkRequestModelToWorkRequestFormState(wr)!);
+        } catch(error) {
+            throw new Error(reportError("Failed to fetch work requests from the database", error));
+        }
+    }
+
     async function deleteWorkRequest(id: string): Promise<OperationResult> {
         try {
             const deleteWorkRequestResponse = await client.models.WorkRequest.delete({ id });
@@ -104,7 +123,9 @@ export default function WorkRequestService() {
     return {
         deleteWorkRequest,
         createWorkRequest,
+        findMatchingWorkRequests,
         getWorkRequest,
+        listOpenWorkRequests,
         observeWorkRequests,
         updateWorkRequest
     }

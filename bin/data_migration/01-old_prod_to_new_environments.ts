@@ -10,13 +10,13 @@ import { DynamoDBDocumentClient, PutCommand, ScanCommand } from "@aws-sdk/lib-dy
 
 type Environment = "dev" | "uat" | "prod";
 const REGION = "eu-central-1";
-const TARGET_ENV: Environment = "uat";
+const TARGET_ENV: Environment = "prod";
 const TABLES = {
     source: {
-        activity: "2026-06-04_Restore_Activity",
-        workRequest: "2026-06-04_Restore_WorkRequest",
-        experienceStatistics: "2026-06-04_Restore_ExperienceStatistics",
-        reaction: "2026-06-04_Restore_Reaction"
+        activity: "2026-06-04_Migration_Activity",
+        workRequest: "2026-06-04_Migration_WorkRequest",
+        experienceStatistics: "2026-06-04_Migration_ExperienceStatistics",
+        reaction: "2026-06-04_Migration_Reaction"
     },
     target: {
         dev: {
@@ -58,7 +58,10 @@ const USER_MAPPINGS: Record<Environment, Record<string, string>> = {
         // Add more users after migration
     },
     prod: {
-        // Fill after production user migration
+        "93546812-f081-70ba-5275-53f301512139": "3334d832-90c1-70ca-0daa-e31b83f1e02f",  // Sebastian
+        "430458a2-b071-70dd-12b9-1b0950fa1d5b": "23847892-d011-703a-d884-52314ebbf677", // Agnieszka
+        "43c4a822-2021-7077-026b-78426b4442e6": "a30498c2-1051-7020-6ee3-3004f5aef703", // Filip
+        "03242812-1011-7047-9d51-d973ac5f9aaa": "13b49892-30c1-70da-d4a9-44d6192da9a0" // Maja
     }
 };
 

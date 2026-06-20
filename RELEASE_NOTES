@@ -89,6 +89,13 @@
 - Activity list filtering
   - Activities performed by all users or activities performed by current user
 
+## Version v0.5.2
+- Current date displayed dynamically in the header
+- Automatic matching of new activities to open work requests
+  - When saving a new activity, the system looks for an open work request with a matching type
+  - If a match is found, a dialog asks whether the activity fulfils the work request
+  - On confirmation, the activity is linked to the work request and the work request is marked as completed
+
 ## Version v0.5.1
 - EventBridge integration
   - Added frontend integration with AWS EventBridge.

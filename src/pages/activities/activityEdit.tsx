@@ -5,10 +5,12 @@ import { useCurrentUser } from "../../hooks/useCurrentUser";
 import User from "../../model/User";
 
 import { ActivityFormState } from "../../model/ActivityFormState";
+import { WorkRequestFormState } from "../../model/WorkRequestFormState";
 import { useActivityEditDetails } from "./hooks/useActivityEditDetails";
 import { useActivityEditActions } from "./hooks/useActivityEditActions";
 import { ActivityOperations, ActivityOperation } from "../../model/ActivityOperation";
 import { ActivityForm } from "../../components/activityForm";
+import { WorkRequestMatchDialog } from "../../components/WorkRequestMatchDialog";
 import { ActivityValidationResult } from "../../model/ValidationResult";
 
 const pageTitleMap: Record<ActivityOperation, string> = {
@@ -24,10 +26,11 @@ function getPageTitle(operation?: ActivityOperation) {
 function ActivityEdit({ users }: { users: Map<string, User> }) {
 
     const currentUser = useCurrentUser() ?? undefined;
-    const { handleSubmit, handleCancel } = useActivityEditActions();
+    const { handleSubmit, handleCancel, findMatchingWorkRequests } = useActivityEditActions();
     const { id: objectId, operation } = useParams<{id?: string, operation?: ActivityOperation}>();
     const { activity, setActivity, workRequest, loading, error } = useActivityEditDetails(operation, objectId, currentUser);
     const [validationResult, setValidationResult] = useState<ActivityValidationResult>({});
+    const [matchingWorkRequests, setMatchingWorkRequests] = useState<WorkRequestFormState[]>([]);
 
     if (!currentUser) {
         return <div className="notFoundState">User nie jest załadowany</div>;
@@ -62,7 +65,25 @@ function ActivityEdit({ users }: { users: Map<string, User> }) {
             return;
         }
 
+        if (operation === ActivityOperations.CREATE) {
+            const matches = await findMatchingWorkRequests(activity.type);
+            if (matches.length > 0) {
+                setMatchingWorkRequests(matches);
+                return;
+            }
+        }
+
         await handleSubmit(activity, workRequest, operation);
+    }
+
+    async function onMatchConfirmed(selectedWorkRequest: WorkRequestFormState) {
+        setMatchingWorkRequests([]);
+        await handleSubmit(activity!, selectedWorkRequest, ActivityOperations.PROMOTE_WORK_REQUEST);
+    }
+
+    async function onMatchDeclined() {
+        setMatchingWorkRequests([]);
+        await handleSubmit(activity!, null, ActivityOperations.CREATE);
     }
 
     function hasErrors(validationResult: ActivityValidationResult) {
@@ -97,6 +118,14 @@ function ActivityEdit({ users }: { users: Map<string, User> }) {
             onActivityPropertyChanged={onActivityPropertyChanged}
             onSubmit={onSubmit}
             onCancel={onCancel}
+        />
+        <WorkRequestMatchDialog
+            isOpen={matchingWorkRequests.length > 0}
+            matchingWorkRequests={matchingWorkRequests}
+            users={users}
+            onConfirm={onMatchConfirmed}
+            onCancel={onMatchDeclined}
+            onDismiss={() => setMatchingWorkRequests([])}
         />
     </>
 }

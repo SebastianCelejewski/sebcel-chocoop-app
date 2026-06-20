@@ -5,12 +5,14 @@ import { ActivityOperations, ActivityOperation } from "../../../model/ActivityOp
 import reportError from "../../../utils/reportError";
 import { OperationResult } from "../../../model/OperationResult";
 import ActivityService from "../../../services/ActivityService";
+import WorkRequestService from "../../../services/WorkRequestService";
 import WorkRequestPromotionUseCase from "../../../use_cases/WorkRequestPromotionUseCase";
 
 export function useActivityEditActions() {
 
     const navigate = useNavigate();
     const activityService = ActivityService();
+    const workRequestService = WorkRequestService();
     const workServicePromotionUseCase = WorkRequestPromotionUseCase();
 
     async function handleSubmit(
@@ -58,5 +60,9 @@ export function useActivityEditActions() {
         }
     }
 
-    return { handleSubmit, handleCancel }
+    async function findMatchingWorkRequests(activityType: string): Promise<WorkRequestFormState[]> {
+        return workRequestService.findMatchingWorkRequests(activityType);
+    }
+
+    return { handleSubmit, handleCancel, findMatchingWorkRequests }
 }
