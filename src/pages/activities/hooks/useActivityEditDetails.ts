@@ -44,7 +44,8 @@ export function useActivityEditDetails(operation?: ActivityOperation, objectId?:
         exp: "",
         scope: "ALL",
         comment: "",
-        requestedAs: undefined
+        requestedAs: undefined,
+        source: "direct"
       }
 
       setActivity(emptyActivity);

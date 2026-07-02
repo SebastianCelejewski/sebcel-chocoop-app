@@ -7,4 +7,5 @@ export type ActivityFormState = {
   scope: string;
   comment: string;
   requestedAs?: string;
+  source?: string;
 }

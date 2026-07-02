@@ -10,6 +10,7 @@ const schema = a.schema({
             exp: a.integer().required(),
             comment: a.string().required(),
             requestedAs: a.string(),
+            source: a.string(),
             scope: a.string().required(),
             reactions: a.hasMany("Reaction", "activityId")
         })

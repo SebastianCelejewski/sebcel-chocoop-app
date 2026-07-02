@@ -11,6 +11,7 @@ export default function WorkRequestPromotionUseCase() {
 
     async function promoteWorkRequest(activity: ActivityFormState, workRequest: WorkRequestFormState): Promise<OperationResult> {
         activity.requestedAs = workRequest.id;
+        activity.source = "promotion";
         var activityCreationResult = await activityService.createActivity(activity);
         if (activityCreationResult.success) {
             workRequest.completed = true;

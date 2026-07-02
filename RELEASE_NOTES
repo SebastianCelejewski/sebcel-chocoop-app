@@ -123,3 +123,13 @@
   - Replaced full rebuild on every activity change with incremental delta updates (4 atomic DynamoDB writes per event instead of a full scan)
   - Added nightly full recalculation Lambda triggered at 02:00 UTC as a self-healing safety net
   - Execution time of the stream-triggered Lambda reduced from ~10-12 s to ~20-50 ms
+
+## Version v0.5.4
+- Added new event notifications: `WorkRequestCompleted`, `ActivityCreated`, `ReactionAdded`, `ActivityReminderNeeded`
+- Refactored the notifications handling
+  - Events are now sent from the backend, not from the frontend
+  - To ensure that the business intent is clear an additional field 'source' is acced to the Activity model
+- Backend refactoring
+  - Split `amplify/backend.ts` into focused modules under `amplify/backend/`: `auth-config`, `database-config`, `exp-stats-config`, `domain-events-config`, `notifications-config`, `backup-config`
+- Architecture decision record
+  - Added `docs/event-driven-architecture.md` documenting the independence boundaries, EventBridge bus topology and event catalogue
