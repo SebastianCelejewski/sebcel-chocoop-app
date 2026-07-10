@@ -3,6 +3,11 @@ function WhatsNew() {
         <h2 className="pageTitle" data-testid="about-page">O aplikacji</h2>
         <ul className="richText">
             <h1>Co nowego w aplikacji</h1>
+            <p className="label"><b>Wersja 0.5.5</b></p>
+            <ul>
+                <li>Dodanie możliwości konfigurowania powiadomień e-mail z poziomu interfejsu użytkownika.</li>
+            </ul>
+
             <p className="label"><b>Wersja 0.5.4</b></p>
             <ul>
                 <li>Dodanie nowych rodzajów powiadomień: dodanie reakcji, wykonanie zlecenia, przypomnienie o wpisywaniu czynności.</li>

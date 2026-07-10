@@ -7,52 +7,10 @@ import { LambdaFunction as LambdaFunctionTarget } from "aws-cdk-lib/aws-events-t
 import { BackendContext } from "./types";
 
 const EVENT_BUS_ARN_PREFIX = "arn:aws:events:eu-central-1:953201351151:event-bus";
-const EVENT_SOURCE = "sebcel-chocoop";
 
-export function configureNotifications({ backend, envName, activityTableParam }: BackendContext) {
+export function configureActivityReminder({ backend, envName, activityTableParam }: BackendContext) {
     const activityTable = backend.data.resources.tables["Activity"];
     const scope = Stack.of(activityTable);
-
-    // ── email-notifications-function ──────────────────────────────────────────
-
-    const emailPublishPolicy = new Policy(
-        scope,
-        "sebcel-chocoop-email-notifications-publish-policy-" + envName,
-        {
-            statements: [
-                new PolicyStatement({
-                    effect: Effect.ALLOW,
-                    actions: ["events:PutEvents"],
-                    resources: [`${EVENT_BUS_ARN_PREFIX}/sebcel-chocoop-notifications`],
-                }),
-            ],
-        }
-    );
-
-    backend.emailNotificationsFunction.resources.lambda.role?.attachInlinePolicy(emailPublishPolicy);
-
-    const infraBus = cdk.aws_events.EventBus.fromEventBusName(
-        scope,
-        "sebcel-chocoop-infra-bus-ref-" + envName,
-        `sebcel-chocoop-infra-bus-${envName}`
-    );
-
-    const emailNotificationsRule = new Rule(
-        scope,
-        "sebcel-chocoop-email-notifications-rule-" + envName,
-        {
-            eventBus: infraBus,
-            eventPattern: {
-                source: [EVENT_SOURCE],
-                detailType: ["WorkRequestCreated", "WorkRequestCompleted", "ReactionAdded", "ActivityReminderNeeded"],
-            },
-        }
-    );
-    emailNotificationsRule.addTarget(
-        new LambdaFunctionTarget(backend.emailNotificationsFunction.resources.lambda)
-    );
-
-    // ── activity-reminder-function ────────────────────────────────────────────
 
     const reminderActivityReadPolicy = new Policy(
         scope,

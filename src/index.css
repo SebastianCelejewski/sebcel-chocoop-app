@@ -498,3 +498,219 @@ ul.richText {
   justify-content: center;
   z-index: 1000;
 }
+
+/* User menu dropdown — matches app menu visual style */
+
+.userMenuDropdown {
+  position: absolute;
+  right: 0;
+  top: 36px;
+  min-width: 180px;
+  z-index: 100;
+  text-align: left;
+}
+
+.userMenuDropdown li {
+  cursor: pointer;
+}
+
+/* Notification preferences panel */
+
+.notifPrefOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+
+.notifPrefPanel {
+  background: #1e1e1e;
+  border: 1px solid #444;
+  border-radius: 12px;
+  width: min(480px, 92vw);
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.notifPrefHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #333;
+  font-size: 1.05em;
+  font-weight: bold;
+  color: white;
+  flex-shrink: 0;
+}
+
+.notifPrefClose {
+  background: transparent;
+  border: none;
+  color: #aaa;
+  font-size: 1em;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  line-height: 1;
+}
+
+.notifPrefClose:hover {
+  color: white;
+  background: #333;
+  border-color: transparent;
+}
+
+.notifPrefChannelRow {
+  display: flex;
+  align-items: center;
+  padding: 8px 20px 4px;
+  gap: 8px;
+  flex-shrink: 0;
+  border-bottom: 1px solid #2e2e2e;
+}
+
+.notifPrefChannelSpacer {
+  flex: 1;
+}
+
+.notifPrefChannelLabel {
+  width: 52px;
+  text-align: center;
+  font-size: 0.78em;
+  color: #aaa;
+  line-height: 1.3;
+}
+
+.notifPrefChannelDisabled {
+  color: #555;
+}
+
+.notifPrefChannelSoon {
+  font-size: 0.85em;
+  font-style: italic;
+}
+
+.notifPrefList {
+  overflow-y: auto;
+  flex: 1;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  margin: 8px 0;
+  padding: 0 12px;
+  gap: 0;
+}
+
+.notifPrefItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 8px;
+  border-bottom: 1px solid #2e2e2e;
+  background: transparent;
+  border-radius: 0;
+}
+
+.notifPrefItem:last-child {
+  border-bottom: none;
+}
+
+.notifPrefItem:hover {
+  background: #2a2a2a;
+  border-radius: 8px;
+}
+
+.notifPrefItemText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  text-align: left;
+}
+
+.notifPrefItemLabel {
+  color: white;
+  font-size: 0.95em;
+}
+
+.notifPrefItemDesc {
+  color: #888;
+  font-size: 0.78em;
+  line-height: 1.4;
+}
+
+.notifPrefToggle {
+  flex-shrink: 0;
+  width: 44px;
+  height: 24px;
+  border-radius: 12px;
+  background: #555;
+  position: relative;
+  transition: background 0.2s;
+  cursor: pointer;
+}
+
+.notifPrefToggleOn {
+  background: #646cff;
+}
+
+.notifPrefToggleDisabled {
+  background: #333;
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.notifPrefThumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: white;
+  transition: left 0.2s;
+}
+
+.notifPrefToggleOn .notifPrefThumb {
+  left: 23px;
+}
+
+.notifPrefFooter {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 14px 20px;
+  border-top: 1px solid #333;
+  flex-shrink: 0;
+}
+
+.notifPrefSavedMsg {
+  color: #6bcf7f;
+  font-size: 0.9em;
+}
+
+.notifPrefErrorMsg {
+  color: #ff6b6b;
+  font-size: 0.9em;
+}
+
+.notifPrefLoading, .notifPrefError {
+  padding: 40px 20px;
+  text-align: center;
+  color: #aaa;
+  font-size: 0.9em;
+}
+
+.notifPrefError {
+  color: #ff6b6b;
+}
