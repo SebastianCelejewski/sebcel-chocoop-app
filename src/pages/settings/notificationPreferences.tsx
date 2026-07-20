@@ -52,22 +52,6 @@ async function putPreferences(prefs: NotificationPreferences): Promise<void> {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 }
 
-function buildDefaultPrefs(types: NotificationType[]): NotificationPreferences {
-    const email: Record<string, boolean> = {};
-    for (const t of types) {
-        if (t.channels.includes("email")) email[t.key] = true;
-    }
-    return { email };
-}
-
-function mergePrefs(
-    defaults: NotificationPreferences,
-    loaded: NotificationPreferences
-): NotificationPreferences {
-    return {
-        email: { ...defaults.email, ...loaded.email },
-    };
-}
 
 interface ToggleProps {
     checked: boolean;
@@ -107,10 +91,9 @@ function NotificationPreferencesPanel({ onClose }: Props) {
         Promise.all([fetchNotificationTypes(), fetchPreferences()])
             .then(([fetchedTypes, fetchedPrefs]) => {
                 const channels = [...new Set(fetchedTypes.flatMap(t => t.channels))];
-                const defaults = buildDefaultPrefs(fetchedTypes);
                 setTypes(fetchedTypes);
                 setAllChannels(channels);
-                setPrefs(mergePrefs(defaults, fetchedPrefs));
+                setPrefs(fetchedPrefs);
                 setLoadStatus("ready");
             })
             .catch(e => {
