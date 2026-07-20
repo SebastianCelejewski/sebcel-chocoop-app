@@ -105,7 +105,7 @@ async function publishReminder(user: CognitoUser, date: string): Promise<void> {
     }));
     if (response.FailedEntryCount && response.FailedEntryCount > 0) {
         const failed = response.Entries?.filter(e => e.ErrorCode);
-        throw new Error(`EventBridge rejected reminder for ${user.sub}: ${JSON.stringify(failed)}`);
+        throw new Error(`EventBridge rejected ActivityReminderNeeded event for user ${user.sub}: ${JSON.stringify(failed)}`);
     }
 }
 

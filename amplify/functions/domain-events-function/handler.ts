@@ -85,7 +85,7 @@ async function publishEvent(detailType: string, detail: unknown): Promise<void> 
     }));
     if (response.FailedEntryCount && response.FailedEntryCount > 0) {
         const failed = response.Entries?.filter(e => e.ErrorCode);
-        throw new Error(`EventBridge rejected entry: ${JSON.stringify(failed)}`);
+        throw new Error(`EventBridge rejected event: ${JSON.stringify(failed)}`);
     }
     logger.info("Published event", { detailType, detail });
 }
