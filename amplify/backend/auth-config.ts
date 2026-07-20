@@ -40,14 +40,6 @@ export function configureAuth(backend: any, envName: string) {
         }
     );
 
-    backend.userMigrationFunction.resources.lambda.addPermission(
-        "CognitoInvokePermission2",
-        {
-            principal: new cdk.aws_iam.ServicePrincipal("cognito-idp.amazonaws.com"),
-            action: "lambda:InvokeFunction"
-        }
-    );
-
     const cognitoMigrationPolicy = new Policy(
         dataStack,
         "sebcel-chocoop-cognito-migration-policy-" + envName,

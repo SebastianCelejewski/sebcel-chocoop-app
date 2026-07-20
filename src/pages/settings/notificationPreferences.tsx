@@ -128,10 +128,13 @@ function NotificationPreferencesPanel({ onClose }: Props) {
 
     function toggle(channel: string, key: string) {
         if (loadStatus === "loading" || loadStatus === "saving") return;
-        setPrefs(prev => ({
-            ...prev,
-            [channel]: { ...prev[channel as keyof NotificationPreferences], [key]: !prev[channel as keyof NotificationPreferences]?.[key] },
-        }));
+        setPrefs(prev => {
+            const channelPrefs: Record<string, boolean> = (prev as unknown as Record<string, Record<string, boolean>>)[channel] ?? {};
+            return {
+                ...prev,
+                [channel]: { ...channelPrefs, [key]: !channelPrefs[key] },
+            };
+        });
         setSaveError("");
     }
 

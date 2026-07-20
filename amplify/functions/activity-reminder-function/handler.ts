@@ -21,7 +21,9 @@ const logger = new Logger({
 
 async function getSSMParameter(name: string): Promise<string> {
     const response = await ssmClient.send(new GetParameterCommand({ Name: name }));
-    return response.Parameter?.Value || '';
+    const value = response.Parameter?.Value;
+    if (!value) throw new Error(`SSM parameter '${name}' is missing or empty`);
+    return value;
 }
 
 async function getActivityTableName(): Promise<string> {
@@ -93,7 +95,7 @@ async function getAllUsers(userPoolId: string): Promise<CognitoUser[]> {
 }
 
 async function publishReminder(user: CognitoUser, date: string): Promise<void> {
-    await eventBridgeClient.send(new PutEventsCommand({
+    const response = await eventBridgeClient.send(new PutEventsCommand({
         Entries: [{
             Source: EVENT_SOURCE,
             DetailType: "ActivityReminderNeeded",
@@ -101,6 +103,10 @@ async function publishReminder(user: CognitoUser, date: string): Promise<void> {
             EventBusName: EVENT_BUS_NAME
         }]
     }));
+    if (response.FailedEntryCount && response.FailedEntryCount > 0) {
+        const failed = response.Entries?.filter(e => e.ErrorCode);
+        throw new Error(`EventBridge rejected reminder for ${user.sub}: ${JSON.stringify(failed)}`);
+    }
 }
 
 export const handler: ScheduledHandler = async () => {
@@ -123,5 +129,9 @@ export const handler: ScheduledHandler = async () => {
         withoutActivities: usersWithoutActivities.length
     });
 
-    await Promise.all(usersWithoutActivities.map(user => publishReminder(user, today)));
+    const results = await Promise.allSettled(usersWithoutActivities.map(user => publishReminder(user, today)));
+    const failures = results.filter(r => r.status === "rejected");
+    if (failures.length > 0) {
+        logger.error("Some reminders failed to publish", { failures });
+    }
 };

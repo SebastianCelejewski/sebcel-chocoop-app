@@ -133,3 +133,6 @@
   - Split `amplify/backend.ts` into focused modules under `amplify/backend/`: `auth-config`, `database-config`, `exp-stats-config`, `domain-events-config`, `notifications-config`, `backup-config`
 - Architecture decision record
   - Added `docs/event-driven-architecture.md` documenting the independence boundaries, EventBridge bus topology and event catalogue
+
+## Version v0.5.5
+- Added ability to modify email notifications preferences in GUI

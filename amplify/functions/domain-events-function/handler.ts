@@ -40,7 +40,9 @@ const userNicknameCache = new Map<string, string>();
 
 async function getSSMParameter(name: string): Promise<string> {
     const response = await ssmClient.send(new GetParameterCommand({ Name: name }));
-    return response.Parameter?.Value || '';
+    const value = response.Parameter?.Value;
+    if (!value) throw new Error(`SSM parameter '${name}' is missing or empty`);
+    return value;
 }
 
 async function getActivityTableName(): Promise<string> {
@@ -73,7 +75,7 @@ async function getNickname(userId: string): Promise<string> {
 }
 
 async function publishEvent(detailType: string, detail: unknown): Promise<void> {
-    await eventBridgeClient.send(new PutEventsCommand({
+    const response = await eventBridgeClient.send(new PutEventsCommand({
         Entries: [{
             Source: EVENT_SOURCE,
             DetailType: detailType,
@@ -81,6 +83,10 @@ async function publishEvent(detailType: string, detail: unknown): Promise<void> 
             EventBusName: EVENT_BUS_NAME
         }]
     }));
+    if (response.FailedEntryCount && response.FailedEntryCount > 0) {
+        const failed = response.Entries?.filter(e => e.ErrorCode);
+        throw new Error(`EventBridge rejected entry: ${JSON.stringify(failed)}`);
+    }
     logger.info("Published event", { detailType, detail });
 }
 
@@ -100,6 +106,8 @@ async function fetchActivity(activityId: string): Promise<Record<string, string>
 }
 
 export const handler: DynamoDBStreamHandler = async (event) => {
+    const batchItemFailures: { itemIdentifier: string }[] = [];
+
     for (const record of event.Records) {
         const eventName = record.eventName;
         const newImg = record.dynamodb?.NewImage;
@@ -180,8 +188,11 @@ export const handler: DynamoDBStreamHandler = async (event) => {
 
         } catch (error) {
             logger.error("Failed to process stream record", { error, record });
+            if (record.dynamodb?.SequenceNumber) {
+                batchItemFailures.push({ itemIdentifier: record.dynamodb.SequenceNumber });
+            }
         }
     }
 
-    return { batchItemFailures: [] };
+    return { batchItemFailures };
 };
