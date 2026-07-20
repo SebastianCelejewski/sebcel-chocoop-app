@@ -136,3 +136,12 @@
 
 ## Version v0.5.5
 - Added ability to modify email notifications preferences in GUI
+
+## Version v0.5.6
+- Code review fixes: reliability and correctness improvements
+  - domain-events-function: populate batchItemFailures on EventBridge publish failure so the DynamoDB stream retries failed records
+  - domain-events-function, activity-reminder-function: check FailedEntryCount on PutEventsCommand response to catch per-entry EventBridge rejections that the SDK does not throw on
+  - activity-reminder-function: use Promise.allSettled so a single failed reminder publish does not abort the remaining users
+  - domain-events-function, activity-reminder-function: throw on empty SSM parameter value instead of silently caching an empty string
+  - auth-config: remove duplicate CognitoInvokePermission2
+  - notificationPreferences: fix unsafe keyof cast in toggle() that would produce incorrect state for unknown channels
