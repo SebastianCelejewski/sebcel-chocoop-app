@@ -145,3 +145,6 @@
   - domain-events-function, activity-reminder-function: throw on empty SSM parameter value instead of silently caching an empty string
   - auth-config: remove duplicate CognitoInvokePermission2
   - notificationPreferences: fix unsafe keyof cast in toggle() that would produce incorrect state for unknown channels
+
+## Version v1.0.0
+- New activity templates: unloading dishwasher, mopping, cleaning bathtube and cleaning toilet
